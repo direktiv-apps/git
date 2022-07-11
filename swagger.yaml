@@ -84,7 +84,7 @@ paths:
       # direktiv code generation is configured here
       x-direktiv-function: |-
         functions:
-          - id: myservice
+          - id: git
             image: gcr.io/direktiv/apps/git:1.0
             type: knative-workflow
       x-direktiv-examples:
