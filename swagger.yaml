@@ -1,0 +1,177 @@
+swagger: "2.0"
+info:
+  description: Git and Github CLI for Direktiv
+  title: Git
+  version: "1.0"
+  x-direktiv-meta:
+    container: gcr.io/direktiv/apps/git
+    maintainer: |-
+      [direktiv.io](https://www.direktiv.io) 
+    issues: https://github.com/direktiv-apps/git/issues
+    url: https://github.com/direktiv-apps/git  
+    categories:
+    - tools
+    - development
+    license: |-
+      [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
+    long-description: This function contains Git as well as Github's command line. To use the CLI the value `pat` has to be set.
+consumes:
+- application/json
+produces:
+- application/json
+schemes:
+- http
+paths:
+  /: 
+    delete:
+      parameters:
+        - name: Direktiv-ActionID
+          in: header
+          type: string
+          description: |
+            On cancel Direktiv sends a DELETE request to
+            the action with id in the header
+      x-direktiv:
+        cancel: echo 'cancel {{ .DirektivActionID }}'
+      responses:
+        200:
+    post:
+      parameters:
+        - name: Direktiv-ActionID
+          in: header
+          type: string
+          description: |
+            direktiv action id is an UUID. 
+            For development it can be set to 'development'
+        - name: Direktiv-TempDir
+          in: header
+          type: string
+          description: |
+            direktiv temp dir is the working directory for that request
+            For development it can be set to e.g. '/tmp'
+        - name: body
+          in: body
+          schema:
+            type: object
+            required:
+              - name
+            properties:
+              commands:
+                type: array
+                description: Array of commands.
+                items:
+                  type: object
+                  properties:
+                    command:
+                      type: string
+                      description: Command to run
+                      example: terraform version
+                    silent: 
+                      type: boolean
+                      description: If set to false the command will not print output to logs.
+                      default: false
+                    print: 
+                      type: boolean
+                      description: If set to false the command will not print the full command with arguments to logs.
+                      default: true
+                    continue: 
+                      type: boolean
+                      description: Stops excecution if command fails, otherwise proceeds with next command
+              pat:
+                type: string
+                description: This is used for Github CLI to authenticate (PAT, Personal Access Token).
+      
+      # direktiv code generation is configured here
+      x-direktiv-function: |-
+        functions:
+          - id: myservice
+            image: gcr.io/direktiv/apps/git:1.0
+            type: knative-workflow
+      x-direktiv-examples:
+        - title: Clone
+          content: |-
+            - id: clone
+                  type: action
+                  action:
+                    function: git
+                    input:
+                      pat: ghp_mysecretpersonalaccesstoken
+                      commands:
+                      - command: gh repo clone myorg/myrepo
+                      # to store the repo in e.g. workflow scope variable
+                      - command: gh repo clone myorg/myrepo out/workflow/myrepo
+        - title: Clone with Git
+          content: |-
+            - id: clone
+                  type: action
+                  action:
+                    function: git
+                    secrets: ["pat"]
+                    input:
+                      commands:
+                      - command: git clone https://myuser:jq(.secrets.pat)@github.com/jensg-st/devops.git
+      x-direktiv:  
+        cmds:
+        - action: foreach
+          loop: .Commands
+          exec: '{{ .Item.Command }}'
+          silent: '{{ .Item.Silent }}'
+          print: '{{ .Item.Print }}'
+          continue: '{{ .Item.Continue }}'
+          env: ["GITHUB_TOKEN={{ .Body.Pat }}"] 
+        output: |
+          {
+            "git": {{ index . 0 | toJson }}
+          }
+      x-direktiv-errors:
+        io.direktiv.command.error: Command execution failed
+        io.direktiv.output.error: Template error for output generation of the service
+        io.direktiv.ri.error: Can not create information object from request
+      responses:
+        200:
+          description: List of executed commands.
+          examples:
+            git:
+            - result: "7c5b9cc HEAD@{0}: clone: from https://github.com/myorg/myapp.git"
+              success: true
+          schema:
+            type: object
+            properties:
+              git:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - success
+                  - result
+                  properties:
+                    success:
+                      type: boolean
+                    result:
+                      additionalProperties: {}
+        default:
+          description: generic error response
+          headers:
+            Direktiv-ErrorCode:
+              type: string
+            Direktiv-ErrorMessage:
+              type: string
+          schema:
+            $ref: "#/definitions/error"
+definitions:
+  direktivFile:
+    type: object
+    x-go-type:
+      type: DirektivFile
+      import:
+        package: github.com/direktiv/apps/go/pkg/apps 
+  error:
+    type: object
+    required:
+      - errorCode
+      - errorMessage
+    properties:
+      errorCode:
+        type: string
+      errorMessage:
+        type: string
