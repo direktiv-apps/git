@@ -26,7 +26,7 @@ states:
     function: git
     input:
       commands:
-      - command: git reflog --git-dir=direktiv/
+      - command: git -C direktiv reflog
     files:
     - key: direktiv.tar.gz
       as: direktiv

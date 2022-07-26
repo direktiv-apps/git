@@ -126,7 +126,7 @@ paths:
                   as: direktiv
                 input:
                   commands:
-                  - command: git reflog --git-dir=direktiv/
+                  - command: git -C direktiv reflog
         - title: Private Clone Github
           content: |-
             - id: git

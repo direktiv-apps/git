@@ -192,7 +192,7 @@ func init() {
             "title": "Basic"
           },
           {
-            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n      commands:\n      - command: git reflog --git-dir=direktiv/",
+            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n      commands:\n      - command: git -C direktiv reflog",
             "title": "Store Cloned Repository"
           },
           {
@@ -373,7 +373,7 @@ func init() {
             "title": "Basic"
           },
           {
-            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n      commands:\n      - command: git reflog --git-dir=direktiv/",
+            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n      commands:\n      - command: git -C direktiv reflog",
             "title": "Store Cloned Repository"
           },
           {
