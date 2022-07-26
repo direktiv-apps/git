@@ -1,0 +1,46 @@
+url: ""
+functions:
+- type: knative-workflow
+  id: git
+  image: gcr.io/direktiv/apps/git:test
+states:
+- id: state0
+  type: action
+  action:
+    function: git
+    input:
+      commands:
+      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git
+  transition: state1
+- id: state1
+  type: action
+  action:
+    function: git
+    input:
+      commands:
+      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
+      pat: jq(.secrets.gitPAT)
+    secrets:
+    - gitPAT
+  transition: readdir
+- id: readdir
+  type: action
+  action:
+    function: git
+    input:
+      commands:
+      - command: ls -la
+    files:
+    - key: direktiv.tar.gz
+      scope: instance
+  transition: state2
+- id: state2
+  type: action
+  action:
+    function: git
+    input:
+      commands:
+      - command: gh repo clone jensg-st/private-test
+      pat: jq(.secrets.gitPAT)
+    secrets:
+    - gitPAT

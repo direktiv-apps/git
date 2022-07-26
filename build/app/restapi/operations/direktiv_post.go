@@ -3,13 +3,14 @@ package operations
 import (
 	"context"
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/direktiv/apps/go/pkg/apps"
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 
-	"myservice/models"
+	"app/models"
 )
 
 const (
@@ -37,7 +38,7 @@ type accParams struct {
 }
 
 type accParamsTemplate struct {
-	PostBody
+	models.PostParamsBody
 	Commands    []interface{}
 	DirektivDir string
 }
@@ -48,7 +49,7 @@ type ctxInfo struct {
 }
 
 func PostDirektivHandle(params PostParams) middleware.Responder {
-	resp := &PostOKBody{}
+	resp := &models.PostOKBody{}
 
 	var (
 		err  error
@@ -80,6 +81,35 @@ func PostDirektivHandle(params PostParams) middleware.Responder {
 	}
 
 	ret, err = runCommand0(ctx, accParams, ri)
+
+	responses = append(responses, ret)
+
+	// if foreach returns an error there is no continue
+	cont = convertTemplateToBool("<no value>", accParams, true)
+	// cont = convertTemplateToBool("<no value>", accParams, true)
+
+	if err != nil && !cont {
+
+		errName := cmdErr
+
+		// if the delete function added the cancel tag
+		ci, ok := sm.Load(*params.DirektivActionID)
+		if ok {
+			cinfo, ok := ci.(*ctxInfo)
+			if ok && cinfo.cancelled {
+				errName = "direktiv.actionCancelled"
+				err = fmt.Errorf("action got cancel request")
+			}
+		}
+
+		return generateError(errName, err)
+	}
+
+	paramsCollector = append(paramsCollector, ret)
+	accParams.Commands = paramsCollector
+
+	ret, err = runCommand1(ctx, accParams, ri)
+
 	responses = append(responses, ret)
 
 	// if foreach returns an error there is no continue
@@ -106,7 +136,7 @@ func PostDirektivHandle(params PostParams) middleware.Responder {
 	accParams.Commands = paramsCollector
 
 	s, err := templateString(`{
-  "git": {{ index . 0 | toJson }}
+  "git": {{ index . 1 | toJson }}
 }
 `, responses)
 	if err != nil {
@@ -126,23 +156,58 @@ func PostDirektivHandle(params PostParams) middleware.Responder {
 	return NewPostOK().WithPayload(resp)
 }
 
+// exec
+func runCommand0(ctx context.Context,
+	params accParams, ri *apps.RequestInfo) (map[string]interface{}, error) {
+
+	ir := make(map[string]interface{})
+	ir[successKey] = false
+
+	at := accParamsTemplate{
+		*params.Body,
+		params.Commands,
+		params.DirektivDir,
+	}
+
+	cmd, err := templateString(`/prep-git.sh {{ .Pat }}`, at)
+	if err != nil {
+		ri.Logger().Infof("error executing command: %v", err)
+		ir[resultKey] = err.Error()
+		return ir, err
+	}
+	cmd = strings.Replace(cmd, "\n", "", -1)
+
+	silent := convertTemplateToBool("<no value>", at, false)
+	print := convertTemplateToBool("<no value>", at, true)
+	output := ""
+
+	envs := []string{}
+
+	return runCmd(ctx, cmd, envs, output, silent, print, ri)
+
+}
+
+// end commands
+
 // foreach command
-type LoopStruct0 struct {
+type LoopStruct1 struct {
 	accParams
 	Item        interface{}
 	DirektivDir string
 }
 
-func runCommand0(ctx context.Context,
+func runCommand1(ctx context.Context,
 	params accParams, ri *apps.RequestInfo) ([]map[string]interface{}, error) {
-
-	ri.Logger().Infof("foreach command over .Commands")
 
 	var cmds []map[string]interface{}
 
+	if params.Body == nil {
+		return cmds, nil
+	}
+
 	for a := range params.Body.Commands {
 
-		ls := &LoopStruct0{
+		ls := &LoopStruct1{
 			params,
 			params.Body.Commands[a],
 			params.DirektivDir,

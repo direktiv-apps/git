@@ -1,10 +1,10 @@
 
-# Git 1.0
+# git 1.0
 
-Git and Github CLI for Direktiv
+Git function including Github CLI
 
 ---
-- #### Categories: tools, development
+- #### Categories: unknown
 - #### Image: gcr.io/direktiv/apps/git 
 - #### License: [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - #### Issue Tracking: https://github.com/direktiv-apps/git/issues
@@ -12,42 +12,73 @@ Git and Github CLI for Direktiv
 - #### Maintainer: [direktiv.io](https://www.direktiv.io) 
 ---
 
-## About Git
+## About git
 
-This function contains Git as well as Github's command line. To use the CLI the value `pat` has to be set.
+This function has Git and the Github CLI installed.  The use of the Github CLI requires the `pat` parameter to be set with a valid personal access token.  The minimum scope for this token is: "repo", "read:org". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
 
 ### Example(s)
   #### Function Configuration
-  ```yaml
-  functions:
-  - id: myservice
-    image: gcr.io/direktiv/apps/git:1.0
-    type: knative-workflow
-  ```
-   #### Clone
-   ```yaml
-   - id: clone
-      type: action
-      action:
-        function: git
-        input:
-          pat: ghp_mysecretpersonalaccesstoken
-          commands:
-          - command: gh repo clone myorg/myrepo
-          # to store the repo in e.g. workflow scope variable
-          - command: gh repo clone myorg/myrepo out/workflow/myrepo
-   ```
-   #### Clone with Git
-   ```yaml
-   - id: clone
-      type: action
-      action:
-        function: git
-        secrets: ["pat"]
-        input:
-          commands:
-          - command: git clone https://myuser:jq(.secrets.pat)@github.com/jensg-st/devops.git
-   ```
+```yaml
+functions:
+- id: git
+  image: gcr.io/direktiv/apps/git:1.0
+  type: knative-workflow
+```
+   #### Basic
+```yaml
+- id: git
+  type: action
+  action:
+    function: git
+    input: 
+      commands:
+      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git
+```
+   #### Store Cloned Repository
+```yaml
+- id: git
+  type: action
+  action:
+    secrets: ["gitPAT"]
+    function: git
+    input: 
+      pat: jq(.secrets.gitPAT)
+      commands:
+      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
+  transition: readdir
+- id: readdir
+  type: action
+  action:
+    function: git
+    files: 
+    - scope: instance
+      key: direktiv.tar.gz
+    input:
+      commands:
+      - command: ls -la 
+```
+   #### Private Clone
+```yaml
+- id: git
+  type: action
+  action:
+    secrets: ["gitPAT"]
+    function: git
+    input: 
+      pat: jq(.secrets.gitPAT)
+      commands:
+      - command: gh repo clone jensg-st/private-test
+```
+
+   ### Secrets
+
+
+- **gitPAT**: The personal access token (PAT) for Github CLI.
+
+
+
+
+
 
 ### Request
 
@@ -68,7 +99,11 @@ This function contains Git as well as Github's command line. To use the CLI the 
 ```json
 [
   {
-    "result": "7c5b9cc HEAD@{0}: clone: from https://github.com/myorg/myapp.git",
+    "result": null,
+    "success": true
+  },
+  {
+    "result": null,
     "success": true
   }
 ]
@@ -121,7 +156,8 @@ This function contains Git as well as Github's command line. To use the CLI the 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
 | commands | [][PostParamsBodyCommandsItems](#post-params-body-commands-items)| `[]*PostParamsBodyCommandsItems` |  | | Array of commands. |  |
-| pat | string| `string` |  | | This is used for Github CLI to authenticate (PAT, Personal Access Token). |  |
+| files | [][DirektivFile](#direktiv-file)| `[]apps.DirektivFile` |  | | File to create before running commands. |  |
+| pat | string| `string` |  | | Used for Github CLI to authenticate (PAT, Personal Access Token). |  |
 
 
 #### <span id="post-params-body-commands-items"></span> postParamsBodyCommandsItems
@@ -134,7 +170,7 @@ This function contains Git as well as Github's command line. To use the CLI the 
 
 | Name | Type | Go type | Required | Default | Description | Example |
 |------|------|---------|:--------:| ------- |-------------|---------|
-| command | string| `string` |  | | Command to run | `terraform version` |
+| command | string| `string` |  | | Command to run | `git clone https://github.com/direktiv/direktiv.git` |
 | continue | boolean| `bool` |  | | Stops excecution if command fails, otherwise proceeds with next command |  |
 | print | boolean| `bool` |  | `true`| If set to false the command will not print the full command with arguments to logs. |  |
 | silent | boolean| `bool` |  | | If set to false the command will not print output to logs. |  |

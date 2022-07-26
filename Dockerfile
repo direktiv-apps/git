@@ -1,12 +1,11 @@
 FROM golang:1.18.2-alpine as build
 
-COPY go.mod src/go.mod
-COPY go.sum src/go.sum
-RUN cd src/ && go mod download
+COPY build/app/go.mod src/go.mod
+COPY build/app/cmd src/cmd/
+COPY build/app/models src/models/
+COPY build/app/restapi src/restapi/
 
-COPY cmd src/cmd/
-COPY models src/models/
-COPY restapi src/restapi/
+RUN cd src/ && go mod tidy
 
 RUN cd src && \
     export CGO_LDFLAGS="-static -w -s" && \
@@ -17,16 +16,18 @@ FROM ubuntu:21.04
 RUN apt-get update && apt-get install ca-certificates -y
 
 RUN apt-get install git sed curl wget -y
+
 RUN wget https://github.com/cli/cli/releases/download/v2.13.0/gh_2.13.0_linux_amd64.tar.gz &&  \
     tar -xvzf gh_2.13.0_linux_amd64.tar.gz
 
 RUN cp gh_2.13.0_linux_amd64/bin/gh ./usr/local/bin/gh
 
+COPY build/prep-git.sh /
+RUN chmod 755 prep-git.sh
+
 # DON'T CHANGE BELOW 
 COPY --from=build /application /bin/application
 
 EXPOSE 8080
-EXPOSE 9292
 
 CMD ["/bin/application", "--port=8080", "--host=0.0.0.0", "--write-timeout=0"]
-

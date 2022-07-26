@@ -29,18 +29,17 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Git and Github CLI for Direktiv",
-    "title": "Git",
+    "description": "Git function including Github CLI",
+    "title": "git",
     "version": "1.0",
     "x-direktiv-meta": {
       "categories": [
-        "tools",
-        "development"
+        "unknown"
       ],
       "container": "gcr.io/direktiv/apps/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
       "license": "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)",
-      "long-description": "This function contains Git as well as Github's command line. To use the CLI the value ` + "`" + `pat` + "`" + ` has to be set.",
+      "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz",
       "maintainer": "[direktiv.io](https://www.direktiv.io) ",
       "url": "https://github.com/direktiv-apps/git"
     }
@@ -51,12 +50,14 @@ func init() {
         "parameters": [
           {
             "type": "string",
+            "default": "development",
             "description": "direktiv action id is an UUID. \nFor development it can be set to 'development'\n",
             "name": "Direktiv-ActionID",
             "in": "header"
           },
           {
             "type": "string",
+            "default": "/tmp",
             "description": "direktiv temp dir is the working directory for that request\nFor development it can be set to e.g. '/tmp'\n",
             "name": "Direktiv-TempDir",
             "in": "header"
@@ -66,9 +67,6 @@ func init() {
             "in": "body",
             "schema": {
               "type": "object",
-              "required": [
-                "name"
-              ],
               "properties": {
                 "commands": {
                   "description": "Array of commands.",
@@ -79,7 +77,7 @@ func init() {
                       "command": {
                         "description": "Command to run",
                         "type": "string",
-                        "example": "terraform version"
+                        "example": "git clone https://github.com/direktiv/direktiv.git"
                       },
                       "continue": {
                         "description": "Stops excecution if command fails, otherwise proceeds with next command",
@@ -98,8 +96,15 @@ func init() {
                     }
                   }
                 },
+                "files": {
+                  "description": "File to create before running commands.",
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/definitions/direktivFile"
+                  }
+                },
                 "pat": {
-                  "description": "This is used for Github CLI to authenticate (PAT, Personal Access Token).",
+                  "description": "Used for Github CLI to authenticate (PAT, Personal Access Token).",
                   "type": "string"
                 }
               }
@@ -135,7 +140,11 @@ func init() {
             "examples": {
               "git": [
                 {
-                  "result": "7c5b9cc HEAD@{0}: clone: from https://github.com/myorg/myapp.git",
+                  "result": null,
+                  "success": true
+                },
+                {
+                  "result": null,
                   "success": true
                 }
               ]
@@ -159,6 +168,10 @@ func init() {
         "x-direktiv": {
           "cmds": [
             {
+              "action": "exec",
+              "exec": "/prep-git.sh {{ .Pat }}"
+            },
+            {
               "action": "foreach",
               "continue": "{{ .Item.Continue }}",
               "env": [
@@ -170,7 +183,7 @@ func init() {
               "silent": "{{ .Item.Silent }}"
             }
           ],
-          "output": "{\n  \"git\": {{ index . 0 | toJson }}\n}\n"
+          "output": "{\n  \"git\": {{ index . 1 | toJson }}\n}\n"
         },
         "x-direktiv-errors": {
           "io.direktiv.command.error": "Command execution failed",
@@ -179,11 +192,25 @@ func init() {
         },
         "x-direktiv-examples": [
           {
-            "content": "- id: req\n     type: action\n     action:\n       function: myservice",
+            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git",
             "title": "Basic"
+          },
+          {
+            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files: \n    - scope: instance\n      key: direktiv.tar.gz\n    input:\n      commands:\n      - command: ls -la ",
+            "title": "Store Cloned Repository"
+          },
+          {
+            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: gh repo clone jensg-st/private-test",
+            "title": "Private Clone"
           }
         ],
-        "x-direktiv-function": "functions:\n  - id: myservice\n    image: gcr.io/direktiv/apps/git:1.0\n    type: knative-workflow"
+        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/apps/git:1.0\n  type: knative-workflow",
+        "x-direktiv-secrets": [
+          {
+            "description": "The personal access token (PAT) for Github CLI.",
+            "name": "gitPAT"
+          }
+        ]
       },
       "delete": {
         "parameters": [
@@ -244,18 +271,17 @@ func init() {
   ],
   "swagger": "2.0",
   "info": {
-    "description": "Git and Github CLI for Direktiv",
-    "title": "Git",
+    "description": "Git function including Github CLI",
+    "title": "git",
     "version": "1.0",
     "x-direktiv-meta": {
       "categories": [
-        "tools",
-        "development"
+        "unknown"
       ],
       "container": "gcr.io/direktiv/apps/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
       "license": "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)",
-      "long-description": "This function contains Git as well as Github's command line. To use the CLI the value ` + "`" + `pat` + "`" + ` has to be set.",
+      "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz",
       "maintainer": "[direktiv.io](https://www.direktiv.io) ",
       "url": "https://github.com/direktiv-apps/git"
     }
@@ -266,12 +292,14 @@ func init() {
         "parameters": [
           {
             "type": "string",
+            "default": "development",
             "description": "direktiv action id is an UUID. \nFor development it can be set to 'development'\n",
             "name": "Direktiv-ActionID",
             "in": "header"
           },
           {
             "type": "string",
+            "default": "/tmp",
             "description": "direktiv temp dir is the working directory for that request\nFor development it can be set to e.g. '/tmp'\n",
             "name": "Direktiv-TempDir",
             "in": "header"
@@ -280,23 +308,7 @@ func init() {
             "name": "body",
             "in": "body",
             "schema": {
-              "type": "object",
-              "required": [
-                "name"
-              ],
-              "properties": {
-                "commands": {
-                  "description": "Array of commands.",
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/CommandsItems0"
-                  }
-                },
-                "pat": {
-                  "description": "This is used for Github CLI to authenticate (PAT, Personal Access Token).",
-                  "type": "string"
-                }
-              }
+              "$ref": "#/definitions/postParamsBody"
             }
           }
         ],
@@ -304,20 +316,16 @@ func init() {
           "200": {
             "description": "List of executed commands.",
             "schema": {
-              "type": "object",
-              "properties": {
-                "git": {
-                  "type": "array",
-                  "items": {
-                    "$ref": "#/definitions/GitItems0"
-                  }
-                }
-              }
+              "$ref": "#/definitions/postOKBody"
             },
             "examples": {
               "git": [
                 {
-                  "result": "7c5b9cc HEAD@{0}: clone: from https://github.com/myorg/myapp.git",
+                  "result": null,
+                  "success": true
+                },
+                {
+                  "result": null,
                   "success": true
                 }
               ]
@@ -341,6 +349,10 @@ func init() {
         "x-direktiv": {
           "cmds": [
             {
+              "action": "exec",
+              "exec": "/prep-git.sh {{ .Pat }}"
+            },
+            {
               "action": "foreach",
               "continue": "{{ .Item.Continue }}",
               "env": [
@@ -352,7 +364,7 @@ func init() {
               "silent": "{{ .Item.Silent }}"
             }
           ],
-          "output": "{\n  \"git\": {{ index . 0 | toJson }}\n}\n"
+          "output": "{\n  \"git\": {{ index . 1 | toJson }}\n}\n"
         },
         "x-direktiv-errors": {
           "io.direktiv.command.error": "Command execution failed",
@@ -361,11 +373,25 @@ func init() {
         },
         "x-direktiv-examples": [
           {
-            "content": "- id: req\n     type: action\n     action:\n       function: myservice",
+            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git",
             "title": "Basic"
+          },
+          {
+            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files: \n    - scope: instance\n      key: direktiv.tar.gz\n    input:\n      commands:\n      - command: ls -la ",
+            "title": "Store Cloned Repository"
+          },
+          {
+            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: gh repo clone jensg-st/private-test",
+            "title": "Private Clone"
           }
         ],
-        "x-direktiv-function": "functions:\n  - id: myservice\n    image: gcr.io/direktiv/apps/git:1.0\n    type: knative-workflow"
+        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/apps/git:1.0\n  type: knative-workflow",
+        "x-direktiv-secrets": [
+          {
+            "description": "The personal access token (PAT) for Github CLI.",
+            "name": "gitPAT"
+          }
+        ]
       },
       "delete": {
         "parameters": [
@@ -388,45 +414,6 @@ func init() {
     }
   },
   "definitions": {
-    "CommandsItems0": {
-      "type": "object",
-      "properties": {
-        "command": {
-          "description": "Command to run",
-          "type": "string",
-          "example": "terraform version"
-        },
-        "continue": {
-          "description": "Stops excecution if command fails, otherwise proceeds with next command",
-          "type": "boolean"
-        },
-        "print": {
-          "description": "If set to false the command will not print the full command with arguments to logs.",
-          "type": "boolean",
-          "default": true
-        },
-        "silent": {
-          "description": "If set to false the command will not print output to logs.",
-          "type": "boolean",
-          "default": false
-        }
-      }
-    },
-    "GitItems0": {
-      "type": "object",
-      "required": [
-        "success",
-        "result"
-      ],
-      "properties": {
-        "result": {
-          "additionalProperties": false
-        },
-        "success": {
-          "type": "boolean"
-        }
-      }
-    },
     "direktivFile": {
       "type": "object",
       "x-go-type": {
@@ -450,6 +437,83 @@ func init() {
           "type": "string"
         }
       }
+    },
+    "postOKBody": {
+      "type": "object",
+      "properties": {
+        "git": {
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/postOKBodyGitItems"
+          }
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
+    "postOKBodyGitItems": {
+      "type": "object",
+      "required": [
+        "success",
+        "result"
+      ],
+      "properties": {
+        "result": {
+          "additionalProperties": false
+        },
+        "success": {
+          "type": "boolean"
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
+    "postParamsBody": {
+      "type": "object",
+      "properties": {
+        "commands": {
+          "description": "Array of commands.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/postParamsBodyCommandsItems"
+          }
+        },
+        "files": {
+          "description": "File to create before running commands.",
+          "type": "array",
+          "items": {
+            "$ref": "#/definitions/direktivFile"
+          }
+        },
+        "pat": {
+          "description": "Used for Github CLI to authenticate (PAT, Personal Access Token).",
+          "type": "string"
+        }
+      },
+      "x-go-gen-location": "operations"
+    },
+    "postParamsBodyCommandsItems": {
+      "type": "object",
+      "properties": {
+        "command": {
+          "description": "Command to run",
+          "type": "string",
+          "example": "git clone https://github.com/direktiv/direktiv.git"
+        },
+        "continue": {
+          "description": "Stops excecution if command fails, otherwise proceeds with next command",
+          "type": "boolean"
+        },
+        "print": {
+          "description": "If set to false the command will not print the full command with arguments to logs.",
+          "type": "boolean",
+          "default": true
+        },
+        "silent": {
+          "description": "If set to false the command will not print output to logs.",
+          "type": "boolean",
+          "default": false
+        }
+      },
+      "x-go-gen-location": "operations"
     }
   }
 }`))

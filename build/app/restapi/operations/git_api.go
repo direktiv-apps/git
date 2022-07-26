@@ -51,7 +51,7 @@ func NewGitAPI(spec *loads.Document) *GitAPI {
 	}
 }
 
-/*GitAPI Git and Github CLI for Direktiv */
+/*GitAPI Git function including Github CLI */
 type GitAPI struct {
 	spec            *loads.Document
 	context         *middleware.Context
