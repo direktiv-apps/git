@@ -10,7 +10,7 @@ info:
     issues: https://github.com/direktiv-apps/git/issues
     url: https://github.com/direktiv-apps/git  
     categories:
-    - unknown
+    - build
     license: |-
       [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
     long-description: >-
@@ -119,13 +119,15 @@ paths:
               type: action
               action:
                 function: git
-                files: 
-                - scope: instance
-                  key: direktiv.tar.gz
+                files:
+                - key: direktiv.tar.gz
+                  scope: instance
+                  type: tar.gz
+                  as: direktiv
                 input:
                   commands:
-                  - command: ls -la 
-        - title: Private Clone
+                  - command: git reflog --git-dir=direktiv/
+        - title: Private Clone Github
           content: |-
             - id: git
               type: action
@@ -136,6 +138,16 @@ paths:
                   pat: jq(.secrets.gitPAT)
                   commands:
                   - command: gh repo clone jensg-st/private-test
+        - title: Private Clone
+          content: |-
+            - id: git
+              type: action
+              action:
+                secrets: ["gitPAT"]
+                function: git
+                input: 
+                  commands:
+                  - command: git clone https://user:jq(.secrets.gitPAT)@github.com/jensg-st/private-test.git
       x-direktiv-secrets:
         - name: gitPAT
           description: The personal access token (PAT) for Github CLI.
@@ -163,9 +175,7 @@ paths:
           description: List of executed commands.
           examples:
             git:
-            - result: # EXAMPLE RESULT HERE
-              success: true
-            - result: #  EXAMPLE RESULT HERE
+            - result: 
               success: true
           schema:
             type: object

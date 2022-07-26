@@ -4,7 +4,7 @@
 Git function including Github CLI
 
 ---
-- #### Categories: unknown
+- #### Categories: build
 - #### Image: gcr.io/direktiv/apps/git 
 - #### License: [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - #### Issue Tracking: https://github.com/direktiv-apps/git/issues
@@ -39,10 +39,8 @@ functions:
 - id: git
   type: action
   action:
-    secrets: ["gitPAT"]
     function: git
     input: 
-      pat: jq(.secrets.gitPAT)
       commands:
       - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
   transition: readdir
@@ -50,14 +48,16 @@ functions:
   type: action
   action:
     function: git
-    files: 
-    - scope: instance
-      key: direktiv.tar.gz
+    files:
+    - key: direktiv.tar.gz
+      scope: instance
+      type: tar.gz
+      as: direktiv
     input:
       commands:
-      - command: ls -la 
+      - command: git reflog --git-dir=direktiv/
 ```
-   #### Private Clone
+   #### Private Clone Github
 ```yaml
 - id: git
   type: action
@@ -68,6 +68,17 @@ functions:
       pat: jq(.secrets.gitPAT)
       commands:
       - command: gh repo clone jensg-st/private-test
+```
+   #### Private Clone
+```yaml
+- id: git
+  type: action
+  action:
+    secrets: ["gitPAT"]
+    function: git
+    input: 
+      commands:
+      - command: git clone https://user:jq(.secrets.gitPAT)@github.com/jensg-st/private-test.git
 ```
 
    ### Secrets
@@ -98,10 +109,6 @@ functions:
     
 ```json
 [
-  {
-    "result": null,
-    "success": true
-  },
   {
     "result": null,
     "success": true

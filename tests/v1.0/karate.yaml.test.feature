@@ -28,7 +28,7 @@ Scenario:  simple clone
 	"""
 	When method POST
 	Then status 200
-		And match $ ==
+	And match $ ==
 	"""
 	{
 	"git": [
@@ -41,7 +41,6 @@ Scenario:  simple clone
 	"""
 
 Scenario: private
-#(gitPAT)
 	Given url karate.properties['testURL']
 
 	And path '/'
@@ -66,7 +65,7 @@ Scenario: private
 	"""
 	When method POST
 	Then status 200
-		And match $ ==
+	And match $ ==
 	"""
 	{
 	"git": [
@@ -95,26 +94,34 @@ Scenario: ghcli
 		"pat": "#(gitPAT)",
 		"commands": [
 			{
-			command: env,
-			"silent": false,
-			"print": true,
-			},
-			{
 			command: gh repo clone jensg-st/private-test,
 			"silent": false,
 			"print": true,
 			continue: true
 			},
 			{
-			command:  ls -la private-test,
+			command: git -C private-test/ log,
 			"silent": false,
 			"print": true,
 			continue: true
 			}
-
 		]
 	}
 	"""
 	When method POST
 	Then status 200
-	
+	And match $ ==
+	"""
+	{
+	"git": [
+	{
+		"result": "#notnull",
+		"success": true
+	},
+	{
+		"result": "#notnull",
+		"success": true
+	}
+	]
+	}
+	"""

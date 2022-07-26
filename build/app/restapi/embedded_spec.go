@@ -34,7 +34,7 @@ func init() {
     "version": "1.0",
     "x-direktiv-meta": {
       "categories": [
-        "unknown"
+        "build"
       ],
       "container": "gcr.io/direktiv/apps/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
@@ -142,10 +142,6 @@ func init() {
                 {
                   "result": null,
                   "success": true
-                },
-                {
-                  "result": null,
-                  "success": true
                 }
               ]
             }
@@ -196,11 +192,15 @@ func init() {
             "title": "Basic"
           },
           {
-            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files: \n    - scope: instance\n      key: direktiv.tar.gz\n    input:\n      commands:\n      - command: ls -la ",
+            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n      commands:\n      - command: git reflog --git-dir=direktiv/",
             "title": "Store Cloned Repository"
           },
           {
             "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: gh repo clone jensg-st/private-test",
+            "title": "Private Clone Github"
+          },
+          {
+            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      commands:\n      - command: git clone https://user:jq(.secrets.gitPAT)@github.com/jensg-st/private-test.git",
             "title": "Private Clone"
           }
         ],
@@ -276,7 +276,7 @@ func init() {
     "version": "1.0",
     "x-direktiv-meta": {
       "categories": [
-        "unknown"
+        "build"
       ],
       "container": "gcr.io/direktiv/apps/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
@@ -320,10 +320,6 @@ func init() {
             },
             "examples": {
               "git": [
-                {
-                  "result": null,
-                  "success": true
-                },
                 {
                   "result": null,
                   "success": true
@@ -377,11 +373,15 @@ func init() {
             "title": "Basic"
           },
           {
-            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files: \n    - scope: instance\n      key: direktiv.tar.gz\n    input:\n      commands:\n      - command: ls -la ",
+            "content": "- id: git\n  type: action\n  action:\n    function: git\n    input: \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n  type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n      commands:\n      - command: git reflog --git-dir=direktiv/",
             "title": "Store Cloned Repository"
           },
           {
             "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n      - command: gh repo clone jensg-st/private-test",
+            "title": "Private Clone Github"
+          },
+          {
+            "content": "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n    function: git\n    input: \n      commands:\n      - command: git clone https://user:jq(.secrets.gitPAT)@github.com/jensg-st/private-test.git",
             "title": "Private Clone"
           }
         ],
