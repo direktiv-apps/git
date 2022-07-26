@@ -230,6 +230,8 @@ func runCommand1(ctx context.Context,
 		envs := []string{}
 		env0, _ := templateString(`GITHUB_TOKEN={{ .Body.Pat }}`, ls)
 		envs = append(envs, env0)
+		env1, _ := templateString(`CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}`, ls)
+		envs = append(envs, env1)
 
 		r, err := runCmd(ctx, cmd, envs, output, silent, print, ri)
 		if err != nil {

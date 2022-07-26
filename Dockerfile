@@ -22,6 +22,14 @@ RUN wget https://github.com/cli/cli/releases/download/v2.13.0/gh_2.13.0_linux_am
 
 RUN cp gh_2.13.0_linux_amd64/bin/gh ./usr/local/bin/gh
 
+# install changelog generator
+RUN apt-get install make ruby-full ruby-dev -y
+RUN apt-get install build-essential -y
+
+RUN gem install faraday-retry
+RUN gem install github_changelog_generator
+
+
 COPY build/prep-git.sh /
 RUN chmod 755 prep-git.sh
 

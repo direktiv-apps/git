@@ -19,6 +19,7 @@ info:
       The minimum scope for this token is: "repo", "read:org".
       To use cloned repositories in later states within the flow they can be written to the out directory, e.g. 
       git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
+      A [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.
 consumes:
 - application/json
 produces:
@@ -161,7 +162,7 @@ paths:
           silent: '{{ .Item.Silent }}'
           print: '{{ .Item.Print }}'
           continue: '{{ .Item.Continue }}'
-          env: ["GITHUB_TOKEN={{ .Body.Pat }}"]
+          env: ["GITHUB_TOKEN={{ .Body.Pat }}", "CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}"]
         output: |
           {
             "git": {{ index . 1 | toJson }}

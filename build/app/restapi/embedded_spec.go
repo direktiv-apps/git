@@ -39,7 +39,7 @@ func init() {
       "container": "gcr.io/direktiv/apps/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
       "license": "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)",
-      "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz",
+      "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz A [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.",
       "maintainer": "[direktiv.io](https://www.direktiv.io) ",
       "url": "https://github.com/direktiv-apps/git"
     }
@@ -171,7 +171,8 @@ func init() {
               "action": "foreach",
               "continue": "{{ .Item.Continue }}",
               "env": [
-                "GITHUB_TOKEN={{ .Body.Pat }}"
+                "GITHUB_TOKEN={{ .Body.Pat }}",
+                "CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}"
               ],
               "exec": "{{ .Item.Command }}",
               "loop": ".Commands",
@@ -281,7 +282,7 @@ func init() {
       "container": "gcr.io/direktiv/apps/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
       "license": "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)",
-      "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz",
+      "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz A [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.",
       "maintainer": "[direktiv.io](https://www.direktiv.io) ",
       "url": "https://github.com/direktiv-apps/git"
     }
@@ -352,7 +353,8 @@ func init() {
               "action": "foreach",
               "continue": "{{ .Item.Continue }}",
               "env": [
-                "GITHUB_TOKEN={{ .Body.Pat }}"
+                "GITHUB_TOKEN={{ .Body.Pat }}",
+                "CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}"
               ],
               "exec": "{{ .Item.Command }}",
               "loop": ".Commands",
