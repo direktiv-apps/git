@@ -14,7 +14,9 @@ Git function including Github CLI
 
 ## About git
 
-This function has Git and the Github CLI installed.  The use of the Github CLI requires the `pat` parameter to be set with a valid personal access token.  The minimum scope for this token is: "repo", "read:org". To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
+This function has Git and the Github CLI installed.  The use of the Github CLI requires the `pat` parameter to be set with a valid personal access token.  The minimum scope for this token is: "repo", "read:org".
+To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz
+A [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.
 
 ### Example(s)
   #### Function Configuration
@@ -55,7 +57,7 @@ functions:
       as: direktiv
     input:
       commands:
-      - command: git reflog --git-dir=direktiv/
+      - command: git -C direktiv reflog
 ```
    #### Private Clone Github
 ```yaml
