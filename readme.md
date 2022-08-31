@@ -5,7 +5,7 @@ Git function including Github CLI
 
 ---
 - #### Categories: build
-- #### Image: gcr.io/direktiv/apps/git 
+- #### Image: direktiv.azurecr.io/functions/git 
 - #### License: [Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)
 - #### Issue Tracking: https://github.com/direktiv-apps/git/issues
 - #### URL: https://github.com/direktiv-apps/git
@@ -25,7 +25,7 @@ A [Github changelog generator](https://github.com/github-changelog-generator/git
 ```yaml
 functions:
 - id: git
-  image: gcr.io/direktiv/apps/git:1.0
+  image: direktiv.azurecr.io/functions/git:1.0
   type: knative-workflow
 ```
    #### Basic

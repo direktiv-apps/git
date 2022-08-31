@@ -7,7 +7,7 @@ Background:
 * def clonePrivate = "git clone https://jensg-st:" + karate.properties['gitPAT'] + "@github.com/jensg-st/private-test.git"
 * configure readTimeout = 6000000
 
-Scenario:  simple clone
+Scenario:  simpleclone
 
 	Given url karate.properties['testURL']
 
