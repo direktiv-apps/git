@@ -36,7 +36,7 @@ func init() {
       "categories": [
         "build"
       ],
-      "container": "direktiv.azurecr.io/functions/git",
+      "container": "gcr.io/direktiv/functions/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
       "license": "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)",
       "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\".\n\nTo use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz.\n\nA [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.",
@@ -205,7 +205,7 @@ func init() {
             "title": "Private Clone"
           }
         ],
-        "x-direktiv-function": "functions:\n- id: git\n  image: direktiv.azurecr.io/functions/git:1.0\n  type: knative-workflow",
+        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/functions/git:1.0\n  type: knative-workflow",
         "x-direktiv-secrets": [
           {
             "description": "The personal access token (PAT) for Github CLI.",
@@ -279,7 +279,7 @@ func init() {
       "categories": [
         "build"
       ],
-      "container": "direktiv.azurecr.io/functions/git",
+      "container": "gcr.io/direktiv/functions/git",
       "issues": "https://github.com/direktiv-apps/git/issues",
       "license": "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)",
       "long-description": "This function has Git and the Github CLI installed.  The use of the Github CLI requires the ` + "`" + `pat` + "`" + ` parameter to be set with a valid personal access token.  The minimum scope for this token is: \"repo\", \"read:org\".\n\nTo use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz.\n\nA [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.",
@@ -387,7 +387,7 @@ func init() {
             "title": "Private Clone"
           }
         ],
-        "x-direktiv-function": "functions:\n- id: git\n  image: direktiv.azurecr.io/functions/git:1.0\n  type: knative-workflow",
+        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/functions/git:1.0\n  type: knative-workflow",
         "x-direktiv-secrets": [
           {
             "description": "The personal access token (PAT) for Github CLI.",

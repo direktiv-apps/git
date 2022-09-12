@@ -4,7 +4,7 @@ info:
   title: git
   version: "1.0"
   x-direktiv-meta:
-    container: direktiv.azurecr.io/functions/git
+    container: gcr.io/direktiv/functions/git
     maintainer: |-
       [direktiv.io](https://www.direktiv.io) 
     issues: https://github.com/direktiv-apps/git/issues
@@ -98,7 +98,7 @@ paths:
       x-direktiv-function: |-
         functions:
         - id: git
-          image: direktiv.azurecr.io/functions/git:1.0
+          image: gcr.io/direktiv/functions/git:1.0
           type: knative-workflow
       x-direktiv-examples:
         - title: Basic
