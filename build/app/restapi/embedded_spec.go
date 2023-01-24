@@ -31,7 +31,7 @@ func init() {
   "info": {
     "description": "Git function including Github CLI",
     "title": "git",
-    "version": "1.0",
+    "version": "1.1",
     "x-direktiv-meta": {
       "categories": [
         "build"
@@ -165,7 +165,8 @@ func init() {
           "cmds": [
             {
               "action": "exec",
-              "exec": "/prep-git.sh {{ .Pat }}"
+              "exec": "/prep-git.sh {{ .Pat }}",
+              "print": false
             },
             {
               "action": "foreach",
@@ -205,7 +206,7 @@ func init() {
             "title": "Private Clone"
           }
         ],
-        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/functions/git:1.0\n  type: knative-workflow",
+        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/functions/git:1.1\n  type: knative-workflow",
         "x-direktiv-secrets": [
           {
             "description": "The personal access token (PAT) for Github CLI.",
@@ -274,7 +275,7 @@ func init() {
   "info": {
     "description": "Git function including Github CLI",
     "title": "git",
-    "version": "1.0",
+    "version": "1.1",
     "x-direktiv-meta": {
       "categories": [
         "build"
@@ -347,7 +348,8 @@ func init() {
           "cmds": [
             {
               "action": "exec",
-              "exec": "/prep-git.sh {{ .Pat }}"
+              "exec": "/prep-git.sh {{ .Pat }}",
+              "print": false
             },
             {
               "action": "foreach",
@@ -387,7 +389,7 @@ func init() {
             "title": "Private Clone"
           }
         ],
-        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/functions/git:1.0\n  type: knative-workflow",
+        "x-direktiv-function": "functions:\n- id: git\n  image: gcr.io/direktiv/functions/git:1.1\n  type: knative-workflow",
         "x-direktiv-secrets": [
           {
             "description": "The personal access token (PAT) for Github CLI.",

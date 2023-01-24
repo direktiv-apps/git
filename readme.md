@@ -1,5 +1,5 @@
 
-# git 1.0
+# git 1.1
 
 Git function including Github CLI
 
@@ -25,7 +25,7 @@ A [Github changelog generator](https://github.com/github-changelog-generator/git
 ```yaml
 functions:
 - id: git
-  image: gcr.io/direktiv/functions/git:1.0
+  image: gcr.io/direktiv/functions/git:1.1
   type: knative-workflow
 ```
    #### Basic

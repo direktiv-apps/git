@@ -2,7 +2,7 @@ swagger: "2.0"
 info:
   description: Git function including Github CLI
   title: git
-  version: "1.0"
+  version: "1.1"
   x-direktiv-meta:
     container: gcr.io/direktiv/functions/git
     maintainer: |-
@@ -98,7 +98,7 @@ paths:
       x-direktiv-function: |-
         functions:
         - id: git
-          image: gcr.io/direktiv/functions/git:1.0
+          image: gcr.io/direktiv/functions/git:1.1
           type: knative-workflow
       x-direktiv-examples:
         - title: Basic
@@ -160,6 +160,7 @@ paths:
         cmds:
         - action: exec
           exec: /prep-git.sh {{ .Pat }}
+          print: false
         - action: foreach
           loop: .Commands
           exec: '{{ .Item.Command }}'

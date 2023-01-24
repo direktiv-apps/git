@@ -10,6 +10,11 @@ import (
 	"github.com/go-openapi/runtime/middleware"
 	"github.com/go-openapi/strfmt"
 
+	// custom function imports
+	// end
+	// custom function imports
+	// end
+
 	"app/models"
 )
 
@@ -79,7 +84,6 @@ func PostDirektivHandle(params PostParams) middleware.Responder {
 		nil,
 		ri.Dir(),
 	}
-
 	ret, err = runCommand0(ctx, accParams, ri)
 
 	responses = append(responses, ret)
@@ -110,7 +114,6 @@ func PostDirektivHandle(params PostParams) middleware.Responder {
 
 	paramsCollector = append(paramsCollector, ret)
 	accParams.Commands = paramsCollector
-
 	ret, err = runCommand1(ctx, accParams, ri)
 
 	responses = append(responses, ret)
@@ -143,7 +146,7 @@ func PostDirektivHandle(params PostParams) middleware.Responder {
 	s, err := templateString(`{
   "git": {{ index . 1 | toJson }}
 }
-`, responses)
+`, responses, ri.Dir())
 	if err != nil {
 		return generateError(outErr, err)
 	}
@@ -174,7 +177,7 @@ func runCommand0(ctx context.Context,
 		params.DirektivDir,
 	}
 
-	cmd, err := templateString(`/prep-git.sh {{ .Pat }}`, at)
+	cmd, err := templateString(`/prep-git.sh {{ .Pat }}`, at, params.DirektivDir)
 	if err != nil {
 		ri.Logger().Infof("error executing command: %v", err)
 		ir[resultKey] = err.Error()
@@ -183,12 +186,18 @@ func runCommand0(ctx context.Context,
 	cmd = strings.Replace(cmd, "\n", "", -1)
 
 	silent := convertTemplateToBool("<no value>", at, false)
-	print := convertTemplateToBool("<no value>", at, true)
+	print := convertTemplateToBool("false", at, true)
 	output := ""
 
 	envs := []string{}
 
-	return runCmd(ctx, cmd, envs, output, silent, print, ri)
+	workingDir, err := templateString(``, at, params.DirektivDir)
+	if err != nil {
+		ir[resultKey] = err.Error()
+		return ir, err
+	}
+
+	return runCmd(ctx, cmd, envs, output, silent, print, ri, workingDir)
 
 }
 
@@ -218,7 +227,7 @@ func runCommand1(ctx context.Context,
 			params.DirektivDir,
 		}
 
-		cmd, err := templateString(`{{ .Item.Command }}`, ls)
+		cmd, err := templateString(`{{ .Item.Command }}`, ls, params.DirektivDir)
 		if err != nil {
 			ir := make(map[string]interface{})
 			ir[successKey] = false
@@ -233,12 +242,22 @@ func runCommand1(ctx context.Context,
 		output := ""
 
 		envs := []string{}
-		env0, _ := templateString(`GITHUB_TOKEN={{ .Body.Pat }}`, ls)
+		env0, _ := templateString(`GITHUB_TOKEN={{ .Body.Pat }}`, ls, params.DirektivDir)
 		envs = append(envs, env0)
-		env1, _ := templateString(`CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}`, ls)
+		env1, _ := templateString(`CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}`, ls, params.DirektivDir)
 		envs = append(envs, env1)
 
-		r, err := runCmd(ctx, cmd, envs, output, silent, print, ri)
+		workingDir, err := templateString(``,
+			ls, params.DirektivDir)
+		if err != nil {
+			ir := make(map[string]interface{})
+			ir[successKey] = false
+			ir[resultKey] = err.Error()
+			cmds = append(cmds, ir)
+			continue
+		}
+
+		r, err := runCmd(ctx, cmd, envs, output, silent, print, ri, workingDir)
 		if err != nil {
 			ir := make(map[string]interface{})
 			ir[successKey] = false
