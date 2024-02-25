@@ -1,0 +1,186 @@
+openapi: 3.0.1
+info:
+  title: git
+  description: Git function including Github CLI
+  version: "1.1"
+  x-direktiv-meta:
+    container: gcr.io/direktiv/functions/git
+    maintainer: "[direktiv.io](https://www.direktiv.io) "
+    issues: https://github.com/direktiv-apps/git/issues
+    url: https://github.com/direktiv-apps/git
+    categories:
+    - build
+    license: "[Apache-2.0](https://www.apache.org/licenses/LICENSE-2.0)"
+    long-description: |-
+      This function has Git and the Github CLI installed.  The use of the Github CLI requires the `pat` parameter to be set with a valid personal access token.  The minimum scope for this token is: "repo", "read:org".
+
+      To use cloned repositories in later states within the flow they can be written to the out directory, e.g.  git clone https://github.com/direktiv/direktiv.git out/instance/direktiv.tar.gz.
+
+      A [Github changelog generator](https://github.com/github-changelog-generator/github-changelog-generator) is available on this image.
+servers:
+- url: /
+paths:
+  /:
+    post:
+      parameters:
+      - name: Direktiv-ActionID
+        in: header
+        description: "direktiv action id is an UUID. \nFor development it can be set\
+          \ to 'development'\n"
+        schema:
+          type: string
+          default: development
+      - name: Direktiv-TempDir
+        in: header
+        description: |
+          direktiv temp dir is the working directory for that request
+          For development it can be set to e.g. '/tmp'
+        schema:
+          type: string
+          default: /tmp
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                pat:
+                  type: string
+                  description: "Used for Github CLI to authenticate (PAT, Personal\
+                    \ Access Token)."
+                files:
+                  type: array
+                  description: File to create before running commands.
+                  items:
+                    $ref: '#/components/schemas/direktivFile'
+                commands:
+                  type: array
+                  description: Array of commands.
+                  items:
+                    type: object
+                    properties:
+                      command:
+                        type: string
+                        description: Command to run
+                        example: git clone https://github.com/direktiv/direktiv.git
+                      silent:
+                        type: boolean
+                        description: If set to false the command will not print output
+                          to logs.
+                        default: false
+                      print:
+                        type: boolean
+                        description: If set to false the command will not print the
+                          full command with arguments to logs.
+                        default: true
+                      continue:
+                        type: boolean
+                        description: "Stops excecution if command fails, otherwise\
+                          \ proceeds with next command"
+        required: false
+      responses:
+        "200":
+          description: List of executed commands.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  git:
+                    type: array
+                    items:
+                      required:
+                      - result
+                      - success
+                      type: object
+                      properties:
+                        success:
+                          type: boolean
+                        result:
+                          type: object
+            git:
+              example:
+              - result: null
+                success: true
+        default:
+          description: generic error response
+          headers:
+            Direktiv-ErrorMessage:
+              schema:
+                type: string
+            Direktiv-ErrorCode:
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+      x-direktiv-function: |-
+        functions:
+        - id: git
+          image: gcr.io/direktiv/functions/git:1.1
+          type: knative-workflow
+      x-direktiv-examples:
+      - title: Basic
+        content: "- id: git\n  type: action\n  action:\n    function: git\n    input:\
+          \ \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git"
+      - title: Store Cloned Repository
+        content: "- id: git\n  type: action\n  action:\n    function: git\n    input:\
+          \ \n      commands:\n      - command: git clone --depth 1 https://github.com/direktiv/direktiv.git\
+          \ out/instance/direktiv.tar.gz\n  transition: readdir\n- id: readdir\n \
+          \ type: action\n  action:\n    function: git\n    files:\n    - key: direktiv.tar.gz\n\
+          \      scope: instance\n      type: tar.gz\n      as: direktiv\n    input:\n\
+          \      commands:\n      - command: git -C direktiv reflog"
+      - title: Private Clone Github
+        content: "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n\
+          \    function: git\n    input: \n      pat: jq(.secrets.gitPAT)\n      commands:\n\
+          \      - command: gh repo clone jensg-st/private-test"
+      - title: Private Clone
+        content: "- id: git\n  type: action\n  action:\n    secrets: [\"gitPAT\"]\n\
+          \    function: git\n    input: \n      commands:\n      - command: git clone\
+          \ https://user:jq(.secrets.gitPAT)@github.com/jensg-st/private-test.git"
+      x-direktiv-secrets:
+      - name: gitPAT
+        description: The personal access token (PAT) for Github CLI.
+      x-direktiv:
+        cmds:
+        - action: exec
+          exec: "/prep-git.sh {{ .Pat }}"
+          print: false
+        - action: foreach
+          loop: .Commands
+          exec: "{{ .Item.Command }}"
+          silent: "{{ .Item.Silent }}"
+          print: "{{ .Item.Print }}"
+          continue: "{{ .Item.Continue }}"
+          env:
+          - "GITHUB_TOKEN={{ .Body.Pat }}"
+          - "CHANGELOG_GITHUB_TOKEN={{ .Body.Pat }}"
+        output: |
+          {
+            "git": {{ index . 1 | toJson }}
+          }
+      x-direktiv-errors:
+        io.direktiv.command.error: Command execution failed
+        io.direktiv.output.error: Template error for output generation of the service
+        io.direktiv.ri.error: Can not create information object from request
+      x-codegen-request-body-name: body
+components:
+  schemas:
+    direktivFile:
+      type: object
+      x-go-type:
+        type: DirektivFile
+        import:
+          package: github.com/direktiv/apps/go/pkg/apps
+    error:
+      required:
+      - errorCode
+      - errorMessage
+      type: object
+      properties:
+        errorCode:
+          type: string
+        errorMessage:
+          type: string
+x-original-swagger-version: "2.0"
